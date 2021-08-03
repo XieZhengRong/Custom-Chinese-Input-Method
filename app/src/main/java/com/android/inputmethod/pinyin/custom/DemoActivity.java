@@ -1,4 +1,4 @@
-package com.android.inputmethod.pinyin.demo;
+package com.android.inputmethod.pinyin.custom;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.PopupWindow;
+import android.widget.Toast;
 
 
 import com.android.inputmethod.pinyin.PinyinIME;
@@ -17,47 +18,26 @@ import java.lang.reflect.Method;
 
 public class DemoActivity extends Activity {
     private EditText edit;
-    PinyinIME pinyinIME;
-    View inputView;
-    View candidateView;
-    PopupWindow inputWindow;
-    PopupWindow candidateWindow;
+    private PinYInIMEWindow pinYInIMEWindow;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.demo);
-        ActivityStack.addActivity(this);
         edit = (EditText) findViewById(R.id.edit);
-        pinyinIME = new PinyinIME(this, edit.onCreateInputConnection(new EditorInfo()));
-        pinyinIME.onCreate();
-        inputView = pinyinIME.onCreateInputView();
-        candidateView = pinyinIME.onCreateCandidatesView();
 
-        pinyinIME.onStartInputView(new EditorInfo(), false);
-        candidateWindow = new PopupWindow(DemoActivity.this);
-        candidateWindow.setContentView(candidateView);
-
-        inputWindow = new PopupWindow(DemoActivity.this);
-        inputWindow.setContentView(inputView);
-        inputWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                edit.clearFocus();
-            }
-        });
-
-        inputWindow.setOutsideTouchable(false);
-
-        inputWindow.setTouchable(true);
         disableShowInput(edit);
         edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    candidateWindow.showAsDropDown(edit);
-                    inputWindow.showAtLocation(edit, Gravity.BOTTOM, 0, 0);
+                if (pinYInIMEWindow != null) {
+                    if (hasFocus) {
+                        pinYInIMEWindow.show(300, 300);
+                    } else {
+                        pinYInIMEWindow.hide();
+                    }
                 } else {
-                    inputWindow.dismiss();
+                    Toast.makeText(DemoActivity.this, "请先创建输入法", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -95,6 +75,26 @@ public class DemoActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ActivityStack.removeActivity(this);
+    }
+
+    public void createInput(View view) {
+        if (pinYInIMEWindow != null) {
+            Toast.makeText(DemoActivity.this, "请勿重复创建输入法", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        pinYInIMEWindow = new PinYInIMEWindow(this, edit.onCreateInputConnection(new EditorInfo()));
+        pinYInIMEWindow.getInputWindow().setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                edit.clearFocus();
+            }
+        });
+        Toast.makeText(DemoActivity.this, "创建成功", Toast.LENGTH_SHORT).show();
+    }
+
+    public void destroyInput(View view) {
+        pinYInIMEWindow.onDestroy();
+        pinYInIMEWindow = null;
+        Toast.makeText(DemoActivity.this, "销毁成功", Toast.LENGTH_SHORT).show();
     }
 }

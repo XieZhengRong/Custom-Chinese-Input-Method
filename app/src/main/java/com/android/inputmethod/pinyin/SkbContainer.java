@@ -379,7 +379,7 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
         mMajorView.dimSoftKeyboard(dimSkb);
     }
 
-    private void dismissPopupSkb() {
+    public void dismissPopupSkb() {
         mPopupSkb.dismiss();
         mPopupSkbShow = false;
         dimSoftKeyboard(false);

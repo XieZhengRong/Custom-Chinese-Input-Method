@@ -48,7 +48,7 @@
                 android:label="@string/ime_settings_activity_name">
 
             </activity>
-            <activity android:name=".demo.DemoActivity"
+            <activity android:name=".custom.DemoActivity"
                 android:screenOrientation="landscape"
                 android:windowSoftInputMode="stateAlwaysHidden">
                 <intent-filter>

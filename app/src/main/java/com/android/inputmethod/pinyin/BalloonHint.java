@@ -16,6 +16,7 @@
 
 package com.android.inputmethod.pinyin;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -29,14 +30,13 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.widget.PopupWindow;
 
-import com.android.inputmethod.pinyin.demo.ActivityStack;
-import com.android.inputmethod.pinyin.demo.ThreadPoolManager;
 
 /**
  * Subclass of PopupWindow used as the feedback when user presses on a soft key
  * or a candidate.
  */
 public class BalloonHint extends PopupWindow {
+
     /**
      * Delayed time to show the balloon hint.
      */
@@ -88,6 +88,7 @@ public class BalloonHint extends PopupWindow {
     private BalloonTimer mBalloonTimer;
 
     private int mParentLocationInWindow[] = new int[2];
+
 
     public BalloonHint(Context context, View parent, int measureSpecMode) {
         super(context);
@@ -188,16 +189,26 @@ public class BalloonHint extends PopupWindow {
             mBalloonTimer.removeTimer();
         }
         if (delay <= 0) {
-            ThreadPoolManager.getInstance().executeMainThreadTask(new Runnable() {
+            final Activity activity = (Activity) (mParent.getContext());
+            activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     mParent.getLocationInWindow(mParentLocationInWindow);
-//                    showAtLocation(mParent, Gravity.LEFT | Gravity.TOP,
-                    showAtLocation(ActivityStack.getLastActivity().getWindow().getDecorView(), Gravity.LEFT | Gravity.TOP,
+                    showAtLocation(activity.getWindow().getDecorView(), Gravity.LEFT | Gravity.TOP,
                             locationInParent[0], locationInParent[1]
                                     + mParentLocationInWindow[1]);
                 }
             });
+//            ThreadPoolManager.getInstance().executeMainThreadTask(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mParent.getLocationInWindow(mParentLocationInWindow);
+//                    Activity activity = (Activity) (mParent.getContext());
+//                    showAtLocation(activity.getWindow().getDecorView(), Gravity.LEFT | Gravity.TOP,
+//                            locationInParent[0], locationInParent[1]
+//                                    + mParentLocationInWindow[1]);
+//                }
+//            });
 
         } else {
             mBalloonTimer.startTimer(delay, BalloonTimer.ACTION_SHOW,
